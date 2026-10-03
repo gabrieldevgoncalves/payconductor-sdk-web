@@ -54,11 +54,24 @@ export enum ThreeDSecureResultStatus {
 	Timeout = "Timeout",
 }
 
+export enum ThreeDSTransStatus {
+	Authenticated = "Y",
+	Attempted = "A",
+	ChallengeRequired = "C",
+	NotAuthenticated = "N",
+	Unavailable = "U",
+	Rejected = "R",
+	InformationOnly = "I",
+}
+
 export type ThreeDSecureResult = {
 	status: ThreeDSecureResultStatus;
 	error?: Error;
 	authToken?: string;
 	dsTransactionId?: string;
+	providerTransactionId?: string;
+	transStatus?: ThreeDSTransStatus;
+	challengeCanceled?: boolean;
 };
 
 export abstract class AbstractThreeDSProvider {
@@ -73,10 +86,13 @@ export abstract class AbstractThreeDSProvider {
 	abstract authenticate(): Promise<ThreeDSecureResult>;
 	abstract cleanup(): void;
 
-	protected fail(message: string): ThreeDSecureResult {
+	protected fail(
+		message: string,
+		details: Omit<ThreeDSecureResult, "status" | "error"> = {},
+	): ThreeDSecureResult {
 		const error = new Error(message);
 		this.options.onError?.(error);
-		return { status: ThreeDSecureResultStatus.Failed, error };
+		return { ...details, status: ThreeDSecureResultStatus.Failed, error };
 	}
 
 	//#region Modal

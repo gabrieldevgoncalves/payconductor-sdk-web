@@ -1,11 +1,15 @@
 import { loadScript } from "../../loader";
-import { AbstractThreeDSProvider, ThreeDSecureResultStatus } from "../types";
+import {
+	AbstractThreeDSProvider,
+	ThreeDSecureResultStatus,
+	ThreeDSTransStatus,
+} from "../types";
 import type { ThreeDSecureResult } from "../types";
 import { OrganizationEnvironment } from "../../iframe/types";
 
 const SDK_URLS: Record<OrganizationEnvironment, string> = {
-	[OrganizationEnvironment.Production]: "https://3ds-nx-js.stone.com.br/live/v2/3ds2.min.js",
-	[OrganizationEnvironment.Sandbox]: "https://3ds-nx-js.stone.com.br/test/v2/3ds2.min.js",
+	[OrganizationEnvironment.Production]: `https://3ds-nx-js.stone.com.br/live/v2/3ds2.min.js`,
+	[OrganizationEnvironment.Sandbox]: `https://3ds-nx-js.stone.com.br/test/v2/3ds2.min.js`,
 };
 
 const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;
@@ -66,16 +70,32 @@ export class PagarMeThreeDSProvider extends AbstractThreeDSProvider {
 				}
 
 				const result = responses[0];
+				const transStatus = Object.values(ThreeDSTransStatus).find(
+					(status) => status === result.trans_status,
+				);
+				const details = {
+					transStatus,
+					providerTransactionId: result.tds_server_trans_id,
+					challengeCanceled: result.challenge_canceled,
+				};
+
 				if (result.challenge_canceled) {
-					resolve(this.fail("3DS challenge canceled by user"));
+					resolve(this.fail("3DS challenge canceled by user", details));
 					return;
 				}
 
-				if (result.trans_status === "Y" || result.trans_status === "A") {
+				if (
+					transStatus === ThreeDSTransStatus.Authenticated ||
+					transStatus === ThreeDSTransStatus.Attempted
+				) {
 					this.options.onComplete?.();
-					resolve({ status: ThreeDSecureResultStatus.Success, dsTransactionId: result.tds_server_trans_id });
+					resolve({
+						...details,
+						status: ThreeDSecureResultStatus.Success,
+						dsTransactionId: result.tds_server_trans_id,
+					});
 				} else {
-					resolve(this.fail(`3DS failed with status: ${result.trans_status}`));
+					resolve(this.fail(`3DS failed with status: ${result.trans_status}`, details));
 				}
 			}).catch((err: unknown) => {
 				this.cleanup();
