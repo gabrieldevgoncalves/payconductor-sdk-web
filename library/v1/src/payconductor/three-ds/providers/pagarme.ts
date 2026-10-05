@@ -111,7 +111,7 @@ export class PagarMeThreeDSProvider extends AbstractThreeDSProvider {
 	}
 
 	private buildOrderData(): Record<string, unknown> {
-		const { card, customer, amount, billingAddress } = this.data;
+		const { card, customer, billingAddress } = this.data;
 
 		return {
 			payments: [{
@@ -132,7 +132,7 @@ export class PagarMeThreeDSProvider extends AbstractThreeDSProvider {
 						} : undefined,
 					},
 				},
-				amount: amount,
+				amount: this.amountInCents,
 			}],
 			...(customer ? {
 				customer: {

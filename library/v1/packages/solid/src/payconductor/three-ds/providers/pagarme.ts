@@ -98,7 +98,6 @@ export class PagarMeThreeDSProvider extends AbstractThreeDSProvider {
     const {
       card,
       customer,
-      amount,
       billingAddress
     } = this.data;
     return {
@@ -120,7 +119,7 @@ export class PagarMeThreeDSProvider extends AbstractThreeDSProvider {
             } : undefined
           }
         },
-        amount: amount
+        amount: this.amountInCents
       }],
       ...(customer ? {
         customer: {

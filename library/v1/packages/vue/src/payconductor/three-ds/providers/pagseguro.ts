@@ -9,10 +9,10 @@ export class PagSeguroThreeDSProvider extends AbstractThreeDSProvider {
       authToken,
       card,
       customer,
-      amount,
       currency,
       billingAddress
     } = this.data;
+    const amount = this.amountInCents;
     if (!authToken) return this.fail("Missing authToken (session) for PagSeguro 3DS");
     if (!card) return this.fail("Missing card data for PagSeguro 3DS");
     if (!customer) return this.fail("Missing customer data for PagSeguro 3DS");

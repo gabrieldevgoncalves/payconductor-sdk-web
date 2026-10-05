@@ -25,6 +25,7 @@ export type ThreeDSecureData = {
 		document?: string;
 		phones?: Array<{ countryCode: string; areaCode: string; number: string; type?: string }>;
 	};
+	/** Valor da cobrança em decimal (ex: 150.9), como retornado pela API do PayConductor */
 	amount?: number;
 	currency?: string;
 	installments?: number;
@@ -85,6 +86,11 @@ export abstract class AbstractThreeDSProvider {
 
 	abstract authenticate(): Promise<ThreeDSecureResult>;
 	abstract cleanup(): void;
+
+	/** Os SDKs de 3DS dos provedores (Pagar.me, PagSeguro) esperam o valor em centavos. */
+	protected get amountInCents(): number | undefined {
+		return this.data.amount === undefined ? undefined : Math.round(this.data.amount * 100);
+	}
 
 	protected fail(
 		message: string,
