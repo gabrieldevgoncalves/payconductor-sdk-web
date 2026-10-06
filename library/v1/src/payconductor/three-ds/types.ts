@@ -25,6 +25,7 @@ export type ThreeDSecureData = {
 		document?: string;
 		phones?: Array<{ countryCode: string; areaCode: string; number: string; type?: string }>;
 	};
+	/** Valor da cobrança em decimal (ex: 150.9), como retornado pela API do PayConductor */
 	amount?: number;
 	currency?: string;
 	installments?: number;
@@ -54,11 +55,24 @@ export enum ThreeDSecureResultStatus {
 	Timeout = "Timeout",
 }
 
+export enum ThreeDSTransStatus {
+	Authenticated = "Y",
+	Attempted = "A",
+	ChallengeRequired = "C",
+	NotAuthenticated = "N",
+	Unavailable = "U",
+	Rejected = "R",
+	InformationOnly = "I",
+}
+
 export type ThreeDSecureResult = {
 	status: ThreeDSecureResultStatus;
 	error?: Error;
 	authToken?: string;
 	dsTransactionId?: string;
+	providerTransactionId?: string;
+	transStatus?: ThreeDSTransStatus;
+	challengeCanceled?: boolean;
 };
 
 export abstract class AbstractThreeDSProvider {
@@ -73,10 +87,18 @@ export abstract class AbstractThreeDSProvider {
 	abstract authenticate(): Promise<ThreeDSecureResult>;
 	abstract cleanup(): void;
 
-	protected fail(message: string): ThreeDSecureResult {
+	/** Os SDKs de 3DS dos provedores (Pagar.me, PagSeguro) esperam o valor em centavos. */
+	protected get amountInCents(): number | undefined {
+		return this.data.amount === undefined ? undefined : Math.round(this.data.amount * 100);
+	}
+
+	protected fail(
+		message: string,
+		details: Omit<ThreeDSecureResult, "status" | "error"> = {},
+	): ThreeDSecureResult {
 		const error = new Error(message);
 		this.options.onError?.(error);
-		return { status: ThreeDSecureResultStatus.Failed, error };
+		return { ...details, status: ThreeDSecureResultStatus.Failed, error };
 	}
 
 	//#region Modal

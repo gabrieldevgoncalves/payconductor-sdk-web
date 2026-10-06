@@ -2,17 +2,17 @@ import { loadScript } from "../../loader";
 import { AbstractThreeDSProvider, ThreeDSecureResultStatus } from "../types";
 import type { ThreeDSecureResult } from "../types";
 import { OrganizationEnvironment } from "../../iframe/types";
-const SDK_URL = "https://assets.pagseguro.com.br/checkout-sdk-js/rc/dist/browser/pagseguro.min";
+const SDK_URL = `https://assets.pagseguro.com.br/checkout-sdk-js/rc/dist/browser/pagseguro.min.js`;
 export class PagSeguroThreeDSProvider extends AbstractThreeDSProvider {
   async authenticate(): Promise<ThreeDSecureResult> {
     const {
       authToken,
       card,
       customer,
-      amount,
       currency,
       billingAddress
     } = this.data;
+    const amount = this.amountInCents;
     if (!authToken) return this.fail("Missing authToken (session) for PagSeguro 3DS");
     if (!card) return this.fail("Missing card data for PagSeguro 3DS");
     if (!customer) return this.fail("Missing customer data for PagSeguro 3DS");

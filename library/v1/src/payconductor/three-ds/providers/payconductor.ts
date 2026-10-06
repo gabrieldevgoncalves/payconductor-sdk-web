@@ -2,7 +2,7 @@ import { loadScript } from "../../loader";
 import { AbstractThreeDSProvider, ThreeDSecureResultStatus } from "../types";
 import type { ThreeDSecureResult } from "../types";
 
-const SDK_URL = "https://static.payzen.lat/static/js/authenticate-client/V1.0/kr-authenticate.umd.js";
+const SDK_URL = `https://static.payzen.lat/static/js/authenticate-client/V1.0/kr-authenticate.umd.js`;
 const TIMEOUT_MS = 10 * 60 * 1000;
 
 export class PayConductorThreeDSProvider extends AbstractThreeDSProvider {
