@@ -1,19 +1,6 @@
 import { AbstractTokenizerProvider } from "../types";
 import { DocumentType } from "../../iframe/types";
 
-function describeMercadoPagoError(error: unknown): string {
-	if (typeof error === "string") return error;
-	if (Array.isArray(error)) return error.map(describeMercadoPagoError).join("; ");
-	if (typeof error === "object" && error !== null) {
-		if ("cause" in error && Array.isArray(error.cause) && error.cause.length > 0) {
-			return describeMercadoPagoError(error.cause);
-		}
-		if ("message" in error && typeof error.message === "string") return error.message;
-		if ("description" in error && typeof error.description === "string") return error.description;
-	}
-	return "Failed to tokenize card";
-}
-
 export class MercadoPagoTokenizerProvider extends AbstractTokenizerProvider {
 	scriptUrl = "https://sdk.mercadopago.com/js/v2";
 
@@ -44,10 +31,23 @@ export class MercadoPagoTokenizerProvider extends AbstractTokenizerProvider {
 				identificationNumber: this.input.customer.documentNumber,
 			})
 			.catch((error: unknown) => {
-				throw new Error(`MercadoPago: ${describeMercadoPagoError(error)}`);
+				throw new Error(this.describeMercadoPagoError(error));
 			});
 
 		if ("id" in res && res.id) return res.id;
-		throw new Error(`MercadoPago: ${describeMercadoPagoError(res)}`);
+		throw new Error(this.describeMercadoPagoError(res));
+	}
+
+	private describeMercadoPagoError(error: unknown): string {
+		if (typeof error === "string") return error;
+		if (Array.isArray(error)) return error.map((item) => this.describeMercadoPagoError(item)).join("; ");
+		if (typeof error === "object" && error !== null) {
+			if ("cause" in error && Array.isArray(error.cause) && error.cause.length > 0) {
+				return this.describeMercadoPagoError(error.cause);
+			}
+			if ("message" in error && typeof error.message === "string") return error.message;
+			if ("description" in error && typeof error.description === "string") return error.description;
+		}
+		return "Failed to tokenize card";
 	}
 }
