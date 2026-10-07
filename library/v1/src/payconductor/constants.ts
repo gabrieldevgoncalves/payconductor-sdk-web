@@ -1,4 +1,6 @@
 import {
+	API_BASE_URL_PROD,
+	APP_BASE_URL_DEV,
 	IFRAME_BASE_URL_DEV,
 	IFRAME_BASE_URL_PROD,
 	IFRAME_DEFAULT_HEIGHT,
@@ -12,6 +14,8 @@ const isDev =
 		window.location.hostname === "127.0.0.1") && !window.location.search.includes("production");
 
 export const IFRAME_BASE_URL = isDev ? IFRAME_BASE_URL_DEV : IFRAME_BASE_URL_PROD;
+
+export const SDK_API_BASE_URL = `${isDev ? `${APP_BASE_URL_DEV}/api/v1` : API_BASE_URL_PROD}/sdk`;
 
 export const ALLOWED_ORIGINS = [IFRAME_BASE_URL_DEV, IFRAME_BASE_URL_PROD];
 
